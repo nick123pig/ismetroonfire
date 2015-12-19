@@ -12,25 +12,25 @@ var client = new Twitter({
   access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
 });
 
-function getOpening(){
+var getOpening = function(){
   var openings = ["Oh shit. ", "Conflabbit! ", "Just great. ", "Nuts. ", "Once again,", "This is not a laughing matter, but ", "Shawty fire burning on Metro. ", "I wouldn't ride Metro today. ", "Please be careful, ", "Call in squirtle! "];
   var item = openings[Math.floor(Math.random()*openings.length)];
   return item;
-}
+};
 
-function yesText(){
+var yesText = function(){
   yes = ["It looks like it","Twitter says yes","Yes","Unfortunately","Yep","Why, yes it is!","I'm afraid so"]
   var item = yes[Math.floor(Math.random()*yes.length)];
   return item;
-}
+};
 
-function noText(){
+var noText = function(){
   no = ["Not Yet!", "Nope!", "It is not", "Doesn't look like it", "No"] 
   var item = no[Math.floor(Math.random()*no.length)];
   return item;
-}
+};
 
-function beforeDate(tweet) {
+var beforeDate = function(tweet) {
   date = tweet['created_at'];
   var now = new Date();
   now = now.getTime();
@@ -40,9 +40,9 @@ function beforeDate(tweet) {
   else {
     return false;
   }
-}
+};
 
-function checkForTerms(text,termsArray){
+var checkForTerms = function (text,termsArray){
   var response = false;
   var lowerText = text.toLowerCase();
   termsArray.forEach(function(term){
@@ -51,9 +51,9 @@ function checkForTerms(text,termsArray){
     }
   });
   return response;
-}
+};
 
-function determineLine(text){
+var determineLine = function (text){
   var results = [];
   var red = ["rd", "red", "shady", "rockville", "twinbrook", "white flint", "grosvenor", "medical center", "bethesda", "friendship heights", "tenleytown", "van ness", "cleveland park", "woodley", "dupont", "farragut north", "metro center", "gallery place", "judiciary", "union station", "noma gallaudet u", "rhode island avenue brentwood", "brookland cua", "totten", "takoma", "silver spring", "forest glen", "wheaton", "glenmont", "strathmore", "udc", "friendship hts", "metro ctr", "chinatown", "noma", "galludet"];
   var silver = ["silver", "sv", "wiehle", "spring hill", "greensboro", "tysons", "mclean", "east falls church", "ballston", "virginia", "clarendon", "court house", "rosslyn", "foggy bottom", "farragut west", "mcpherson", "metro center", "triangle", "smithsonian", "l'enfant plaza", "federal center", "capitol south", "eastern market", "potomac", "stadium", "benning", "heights", "addison", "morgan", "largo", "metro ctr", "lenfant", "armory", "reston"];
@@ -73,15 +73,15 @@ function determineLine(text){
   else {
     return results
   }
-}
+};
 
-function sendTweet(text){
+var sendTweet = function(text){
   client.post('statuses/update', {status: text},  function(error, tweet, response){
     if(error) throw error;
   });
-}
+};
 
-function updateS3(result_json){
+var updateS3 = function(result_json){
   var results = JSON.stringify(result_json);
   var params = {Bucket: 'www.ismetroonfire.com', Key: 'fireapi', Body: results};
   s3.putObject(params, function(err, data) {
@@ -90,11 +90,11 @@ function updateS3(result_json){
     }        
   });
   s3.putObject(params)
-}
+};
 
-function getTwitter() {
+var getTwitter = function() {
   result_json = {"counts":{}};
-  client.get('statuses/user_timeline', {screen_name: 'unsuckdcmetro', exclude_replies:true, include_rts: true},  function(error, tweets, response){
+  client.get('statuses/user_timeline', {screen_name: 'loudnick123pig', exclude_replies:true, include_rts: true},  function(error, tweets, response){
     if(error) { throw error; }
     var current_tweets = [];
     tweets.forEach(function(tweet){
@@ -146,9 +146,9 @@ function getTwitter() {
       updateS3(result_json);
     }
   });
-}
+};
 
 exports.handler = function(event, context) {
-  getTwitter();
+  getTwitter();  
   context.succeed("complete!");
 };
