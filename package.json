@@ -1,0 +1,17 @@
+{
+  "name": "ismetroonfire",
+  "version": "1.0.0",
+  "description": "A Lambda function checking twitter",
+  "main": "index.js",
+  "author": "Nick Stocchero",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^1.2.0",
+    "lodash": "^3.10.1",
+    "twitter": "^1.2.5",
+    "aws-sdk": "^2.2.25"
+  },
+  "scripts": {
+    "zip": "zip -r ismetroonfire.zip .env index.js node_modules/"
+  }
+}
