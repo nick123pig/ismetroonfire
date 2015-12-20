@@ -1,5 +1,5 @@
 // Load in dotenv vars
-// Be sure to not use standard AWS naming conventions
+// Be sure to not use standard AWS naming conventions, as the lambda environment will already have these loaded
 require('dotenv').load();
 
 // Load Dependencies and set vars
@@ -9,7 +9,7 @@ var AWS = require('aws-sdk');
 AWS.config.update({accessKeyId: process.env.AAK, secretAccessKey: process.env.ASAK, region: 'us-east-1', sslEnabled: true});
 var s3 = new AWS.S3();
 
-// Setup Twitter Clien
+// Setup Twitter Client
 var client = new Twitter({
   consumer_key: process.env.TWITTER_CONSUMER_KEY,
   consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
