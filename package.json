@@ -12,6 +12,6 @@
     "aws-sdk": "^2.2.25"
   },
   "scripts": {
-    "zip": "zip -r ismetroonfire.zip .env index.js node_modules/"
+    "package": "zip -r ismetroonfire.zip .env index.js node_modules/"
   }
 }

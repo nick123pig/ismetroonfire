@@ -5,4 +5,4 @@ IsMetroOnFire
 
 AWS Lambda function that runs every 15 minutes
 
-`npm run zip`
+`npm run build`
