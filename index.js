@@ -2,7 +2,7 @@ require('dotenv').load();
 var _ = require('lodash');
 var Twitter = require('twitter');
 var AWS = require('aws-sdk'); 
-AWS.config.update({accessKeyId: process.env.AWS_ACCESS_KEY, secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY});
+AWS.config.update({accessKeyId: process.env.AAK, secretAccessKey: process.env.ASAK, region: 'us-east-1', sslEnabled: true});
 var s3 = new AWS.S3();
 
 var client = new Twitter({
@@ -34,12 +34,8 @@ var beforeDate = function(tweet) {
   date = tweet['created_at'];
   var now = new Date();
   now = now.getTime();
-  if ( now  < (Date.parse(date) + (15*60000) ) ){
-    return true;
-  }
-  else {
-    return false;
-  }
+  if ( now  < (Date.parse(date) + (15*60000) ) ) { return true; }
+  else { return false; }
 };
 
 var checkForTerms = function (text,termsArray){
@@ -79,22 +75,26 @@ var sendTweet = function(text){
   client.post('statuses/update', {status: text},  function(error, tweet, response){
     if(error) throw error;
   });
+  return true;
 };
 
-var updateS3 = function(result_json){
-  var results = JSON.stringify(result_json);
-  var params = {Bucket: 'www.ismetroonfire.com', Key: 'fireapi', Body: results};
-  s3.putObject(params, function(err, data) {
-    if (err) {
-      console.log(err);
-    }        
-  });
-  s3.putObject(params)
+var updateS3 = function(result_json,context){
+  var results = String(JSON.stringify(result_json));
+  var params = {Bucket: 'www.ismetroonfire.com', Key: 'fireapi', Body: results, ContentType:"text/html; charset=utf-8"};
+  var request = s3.putObject(params);
+  request.on('complete', function(response) { 
+    console.log(response);
+    context.done(); 
+  }).on('error', function(response){
+    console.log(response);
+  }); 
+  request.send();
 };
 
-var getTwitter = function() {
+var getTwitter = function(event,context){
+  console.log("Starting to Get Twitter");
   result_json = {"counts":{}};
-  client.get('statuses/user_timeline', {screen_name: 'loudnick123pig', exclude_replies:true, include_rts: true},  function(error, tweets, response){
+  client.get('statuses/user_timeline', {screen_name: 'unsuckdcmetro', exclude_replies:true, include_rts: true},  function(error, tweets, response){
     if(error) { throw error; }
     var current_tweets = [];
     tweets.forEach(function(tweet){
@@ -112,6 +112,8 @@ var getTwitter = function() {
       }
     });
 
+    console.log(affected_lines);
+
     if (affected_lines.length > 0){
       affected_lines = _.uniq(affected_lines);
       
@@ -127,7 +129,7 @@ var getTwitter = function() {
       result_json["message"] = yesText();
 
       // Update S3
-      updateS3(result_json);
+      updateS3(result_json,context);
 
       // Tweet It
       var lines;
@@ -143,12 +145,11 @@ var getTwitter = function() {
     else {
       result_json = {"counts":{"red":false,"orange":false,"yellow":false,"green":false,"blue":false,"silver":false}};
       result_json["message"] = noText();
-      updateS3(result_json);
+      updateS3(result_json,context);
     }
   });
 };
 
 exports.handler = function(event, context) {
-  getTwitter();  
-  context.succeed("complete!");
+  getTwitter(event, context);
 };
