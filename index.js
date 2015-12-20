@@ -49,9 +49,9 @@ var beforeDate = function(tweet) {
 // Check to see if a string contains a string from an array
 var checkForTerms = function (text,termsArray){
   var response = false;
-  var lowerText = text.toLowerCase();
+  var lowerText = ' ' + text.toLowerCase() + ' ';
   termsArray.some(function (term) {
-    if (lowerText.indexOf(term) >= 0) {
+    if (lowerText.indexOf(' ' + term + ' ') >= 0) {
       response = true;
       return true;
     }
@@ -62,18 +62,17 @@ var checkForTerms = function (text,termsArray){
 // Determine the line based on the station
 var determineLine = function (text){
   var results = [];
-  var red = ["rd", "red", "shady", "rockville", "twinbrook", "white flint", "grosvenor", "medical center", "bethesda", "friendship heights", "tenleytown", "van ness", "cleveland park", "woodley", "dupont", "farragut north", "metro center", "gallery place", "judiciary", "union station", "noma gallaudet u", "rhode island avenue brentwood", "brookland cua", "totten", "takoma", "silver spring", "forest glen", "wheaton", "glenmont", "strathmore", "udc", "friendship hts", "metro ctr", "chinatown", "noma", "galludet"];
-  var silver = ["silver", "sv", "wiehle", "spring hill", "greensboro", "tysons", "mclean", "east falls church", "ballston", "virginia", "clarendon", "court house", "rosslyn", "foggy bottom", "farragut west", "mcpherson", "metro center", "triangle", "smithsonian", "l'enfant plaza", "federal center", "capitol south", "eastern market", "potomac", "stadium", "benning", "heights", "addison", "morgan", "largo", "metro ctr", "lenfant", "armory", "reston"];
-  var blue = ["blue", "blue", "franconia", "dorn", "king", "braddock", "armory", "national airport", "crystal", "pentagon city", "pentagon", "arlington cemetery", "rosslyn", "foggy", "farragut west", "mcpherson", "metro center", "triangle", "smithsonian", "l'enfant", "federal center", "capitol south", "eastern market", "potomac", "stadium", "benning", "capitol heights", "addison road", "morgan", "largo", "metro ctr", "national airport", "national", "franconia", "old town", "cemetery", "lenfant", "armory", "dca", "airport"];
-  var orange = [ "orange", "or", "vienna", "dunn loring", "falls church", "ballston", "virginia square", "clarendon", "court house", "rosslyn", "foggy bottom", "farragut west", "mcpherson", "metro center", "triangle", "smithsonian", "l'enfant plaza", "federal center", "capitol south", "eastern market", "potomac", "stadium", "minnesota", "deanwood", "cheverly", "landover", "carrollton", "metro ctr", "lenfant", "armory"];
-  var yellow = [ "yellow", "yl", "huntington", "eisenhower", "king", "braddock", "potomac", "national airport", "crystal city", "pentagon city", "pentagon", "l'enfant plaza", "archives", "gallery place", "vernon", "shaw", "u street", "columbia", "petworth", "totten", "hyattsville", "george", "college park", "greenbelt", "cardozo", "chinatown", "national airport", "national", "lenfant", "georgia", "howard", "dca", "airport"];
-  var green = [ "green", "gr", "greenbelt", "branch", "suitland", "naylor", "southern", "congress", "anacostia", "navy yard", "waterfront", "l'enfant", "archives", "gallery", "vernon", "shaw", "u street", "columbia", "petworth", "totten", "west hyattsville", "george", "college park", "greenbelt", "chinatown", "lenfant", "georgia", "howard"];
-  if (checkForTerms(text,red)){ results.push("red"); }
-  if (checkForTerms(text,silver)){ results.push("silver"); }
-  if (checkForTerms(text,blue)){ results.push("blue"); }
-  if (checkForTerms(text,orange)){ results.push("orange"); }
-  if (checkForTerms(text,yellow)){ results.push("yellow"); }
-  if (checkForTerms(text,green)){ results.push("green"); }
+  var red = ["rd", "red", "shady", "rockville", "twinbrook", "flint", "grosvenor", "strathmore ", "medical center", "bethesda", "friendship", "tenleytown", "van ness", "cleveland", "woodley", "dupont", "farragut north", "metro", "gallery", "judiciary", "union station", "noma gallaudet u", "rhode island", "brentwood", "brookland", "cua", "totten", "takoma", "silver spring", "forest glen", "wheaton", "glenmont", "udc", "metro ctr", "chinatown", "noma", "galludet"];
+  var silver = ["silver", "sv", "wiehle", "spring hill", "greensboro", "tysons", "mclean", "east falls church", "efc", "ballston", "virginia", "clarendon", "court house", "rosslyn", "foggy", "farragut west", "mcpherson", "metro", "triangle", "smithsonian", "l'enfant", "federal center", "capitol south", "eastern", "potomac", "stadium", "benning", "heights", "addison", "morgan", "largo", "lenfant", "armory", "reston"];
+  var blue = ["blue", "bl", "franconia", "dorn", "king", "braddock", "armory", "airport", "crystal", "pentagon", "cemetery", "rosslyn", "foggy", "farragut west", "mcpherson", "metro", "triangle", "smithsonian", "l'enfant", "federal center", "capitol south", "eastern market", "potomac", "stadium", "benning", "capitol heights", "addison", "morgan", "largo", "national", "old town", "lenfant", "dca"];
+  var orange = ["orange", "or", "vienna", "dunn loring", "falls church", "ballston", "virginia square", "clarendon", "court house", "rosslyn", "foggy bottom", "farragut west", "mcpherson", "metro center", "triangle", "smithsonian", "l'enfant plaza", "federal center", "capitol south", "eastern market", "potomac", "stadium", "minnesota", "deanwood", "cheverly", "landover", "carrollton", "metro ctr", "lenfant", "armory"];
+  var yellow = ["yellow", "yl", "huntington", "eisenhower", "king", "braddock", "potomac", "airport", "crystal city", "pentagon", "l'enfant", "archives", "gallery", "vernon", "shaw", "u street", "u st", "cardozo", "columbia", "petworth", "totten", "hyattsville", "george", "college park", "greenbelt", "chinatown", "lenfant", "georgia", "howard", "dca"];
+  var green = ["green", "gr", "greenbelt", "branch", "suitland", "naylor", "southern", "congress", "anacostia", "navy yard", "waterfront", "l'enfant", "archives", "gallery", "vernon", "shaw", "u street", "u st", "cardozo", "columbia", "petworth", "totten", "hyattsville", "george", "college park", "chinatown", "lenfant", "georgia", "howard"];
+  
+  ["red","orange","yellow","green","blue","silver"].forEach(function(line){
+    if (checkForTerms(text,eval(line))) { results.push(line); }
+  });
+
   if (results.length === 0 ){
     return false;
   }
