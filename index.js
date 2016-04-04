@@ -19,12 +19,12 @@ var client = new Twitter({
 
 // Twitter Opening
 var getOpening = function(){
-  return _.sample(["Oh shit. ","Conflabbit! ","Just great. ","Nuts. ","Once again,","This is not a laughing matter, but ","Shawty fire burning on Metro. ","I wouldn't ride Metro today. ","Please be careful, ","Call in squirtle! "]);
+  return _.sample(["Oh shit. ","Conflabbit! ","Just great. ","Nuts. ","Once again,","This is not a laughing matter, but ","Shawty fire burning on Metro. ","I wouldn't ride Metro today. ","Please be careful, ","Call in squirtle! ","Tell all your friends, ","Reset the counter! "]);
 };
 
 // Website "Yes"
 var yesText = function(){
-  return _.sample(["It looks like it","Twitter says yes","Yes","Unfortunately","Yep","Why, yes it is!","I'm afraid so"]);
+  return _.sample(["It looks like it","Twitter says yes","Yes","Unfortunately","Yep","Oh yeah!","Why, yes it is!","I'm afraid so"]);
 };
 
 // Website "No"
@@ -93,7 +93,7 @@ var sendTweet = function(text){
 // Update the S3 API
 var updateS3 = function(result_json,context){
   var results = String(JSON.stringify(result_json));
-  var params = {Bucket: 'www.ismetroonfire.com', Key: 'fireapi', Body: results, ContentType:"text/html; charset=utf-8"};
+  var params = {Bucket: 'www.ismetroonfire.com', Key: 'fireapi', Body: results, ContentType:"application/json; charset=utf-8"};
   var request = s3.putObject(params);
   request.on('complete', function(response) { 
     console.log(response);
