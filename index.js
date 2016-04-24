@@ -93,7 +93,7 @@ var sendTweet = function(text){
 // Update the S3 API
 var updateS3 = function(result_json,context){
   var results = String(JSON.stringify(result_json));
-  var params = {Bucket: 'www.ismetroonfire.com', Key: 'fireapi', Body: results, ContentType:"application/json; charset=utf-8", 'Cache-Control': 'no-cache'};
+  var params = {Bucket: 'www.ismetroonfire.com', Key: 'fireapi', Body: results, ContentType:"application/json; charset=utf-8", CacheControl: 'no-cache'};
   var request = s3.putObject(params);
   request.on('complete', function(response) { 
     console.log(response);
