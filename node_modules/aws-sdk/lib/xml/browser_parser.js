@@ -14,24 +14,43 @@ DomXmlParser.prototype.parse = function(xml, shape) {
         result = parser.parseFromString(xml, 'text/xml');
       } catch (syntaxError) {
         throw util.error(new Error('Parse error in document'),
-          {originalError: syntaxError});
+          {
+            originalError: syntaxError,
+            code: 'XMLParserError',
+            retryable: true
+          });
       }
 
       if (result.documentElement === null) {
-        throw new Error('Cannot parse empty document.');
+        throw util.error(new Error('Cannot parse empty document.'),
+          {
+            code: 'XMLParserError',
+            retryable: true
+          });
       }
 
       var isError = result.getElementsByTagName('parsererror')[0];
       if (isError && (isError.parentNode === result ||
-          isError.parentNode.nodeName === 'body')) {
-        throw new Error(isError.getElementsByTagName('div')[0].textContent);
+          isError.parentNode.nodeName === 'body' ||
+          isError.parentNode.parentNode === result ||
+          isError.parentNode.parentNode.nodeName === 'body')) {
+        var errorElement = isError.getElementsByTagName('div')[0] || isError;
+        throw util.error(new Error(errorElement.textContent || 'Parser error in document'),
+          {
+            code: 'XMLParserError',
+            retryable: true
+          });
       }
     } else if (window.ActiveXObject) {
       result = new window.ActiveXObject('Microsoft.XMLDOM');
       result.async = false;
 
       if (!result.loadXML(xml)) {
-        throw new Error('Parse error in document');
+        throw util.error(new Error('Parse error in document'),
+          {
+            code: 'XMLParserError',
+            retryable: true
+          });
       }
     } else {
       throw new Error('Cannot load XML parser');
@@ -48,7 +67,7 @@ DomXmlParser.prototype.parse = function(xml, shape) {
     }
     return data;
   } else if (error) {
-    throw util.error(error || new Error(), {code: 'XMLParserError'});
+    throw util.error(error || new Error(), {code: 'XMLParserError', retryable: true});
   } else { // empty xml document
     return {};
   }
@@ -71,7 +90,7 @@ function parseStructure(xml, shape) {
 
   util.each(shape.members, function(memberName, memberShape) {
     if (memberShape.isXmlAttribute) {
-      if (xml.attributes.hasOwnProperty(memberShape.name)) {
+      if (Object.prototype.hasOwnProperty.call(xml.attributes, memberShape.name)) {
         var value = xml.attributes[memberShape.name].value;
         data[memberName] = parseXml({textContent: value}, memberShape);
       }
@@ -153,7 +172,7 @@ function parseUnknown(xml) {
   var child = xml.firstElementChild;
   while (child) {
     var tag = child.nodeName;
-    if (shape.members.hasOwnProperty(tag)) {
+    if (Object.prototype.hasOwnProperty.call(shape.members, tag)) {
       // multiple tags of the same name makes it a list
       shape.members[tag].type = 'list';
     } else {
