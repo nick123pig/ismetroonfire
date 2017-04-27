@@ -37,7 +37,16 @@ function buildRequest(req) {
 function extractError(resp) {
   Rest.extractError(resp);
 
-  var data = new AWS.XML.Parser().parse(resp.httpResponse.body.toString());
+  var data;
+  try {
+    data = new AWS.XML.Parser().parse(resp.httpResponse.body.toString());
+  } catch (e) {
+    data = {
+      Code: resp.httpResponse.statusCode,
+      Message: resp.httpResponse.statusMessage
+    };
+  }
+
   if (data.Errors) data = data.Errors;
   if (data.Error) data = data.Error;
   if (data.Code) {
@@ -65,13 +74,13 @@ function extractData(resp) {
   var payload = output.payload;
   if (payload) {
     var payloadMember = output.members[payload];
-    if (payloadMember.isStreaming) {
-      resp.data[payload] = body;
-    } else if (payloadMember.type === 'structure') {
+    if (payloadMember.type === 'structure') {
       parser = new AWS.XML.Parser();
       resp.data[payload] = parser.parse(body.toString(), payloadMember);
+    } else if (payloadMember.type === 'binary' || payloadMember.isStreaming) {
+      resp.data[payload] = body;
     } else {
-      resp.data[payload] = body.toString();
+      resp.data[payload] = payloadMember.toType(body);
     }
   } else if (body.length > 0) {
     parser = new AWS.XML.Parser();

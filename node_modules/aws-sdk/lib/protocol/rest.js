@@ -4,15 +4,13 @@ function populateMethod(req) {
   req.httpRequest.method = req.service.api.operations[req.operation].httpMethod;
 }
 
-function populateURI(req) {
-  var operation = req.service.api.operations[req.operation];
-  var input = operation.input;
-  var uri = [req.httpRequest.endpoint.path, operation.httpPath].join('/');
+function generateURI(endpointPath, operationPath, input, params) {
+  var uri = [endpointPath, operationPath].join('/');
   uri = uri.replace(/\/+/g, '/');
 
   var queryString = {}, queryStringSet = false;
   util.each(input.members, function (name, member) {
-    var paramValue = req.params[name];
+    var paramValue = params[name];
     if (paramValue === null || paramValue === undefined) return;
     if (member.location === 'uri') {
       var regex = new RegExp('\\{' + member.name + '(\\+)?\\}');
@@ -57,6 +55,14 @@ function populateURI(req) {
     uri += parts.join('&');
   }
 
+  return uri;
+}
+
+function populateURI(req) {
+  var operation = req.service.api.operations[req.operation];
+  var input = operation.input;
+
+  var uri = generateURI(req.httpRequest.endpoint.path, operation.httpPath, input, req.params);
   req.httpRequest.path = uri;
 }
 
@@ -72,6 +78,9 @@ function populateHeaders(req) {
       });
     } else if (member.location === 'header') {
       value = member.toWireFormat(value).toString();
+      if (member.isJsonValue) {
+        value = util.base64.encode(value);
+      }
       req.httpRequest.headers[member.name] = value;
     }
   });
@@ -113,7 +122,10 @@ function extractData(resp) {
       });
     } else if (member.location === 'header') {
       if (headers[header] !== undefined) {
-        data[name] = headers[header];
+        var value = member.isJsonValue ?
+          util.base64.decode(headers[header]) :
+          headers[header];
+        data[name] = member.toType(value);
       }
     } else if (member.location === 'statusCode') {
       data[name] = parseInt(r.statusCode, 10);
@@ -126,5 +138,6 @@ function extractData(resp) {
 module.exports = {
   buildRequest: buildRequest,
   extractError: extractError,
-  extractData: extractData
+  extractData: extractData,
+  generateURI: generateURI
 };

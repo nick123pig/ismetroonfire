@@ -7,6 +7,10 @@ function typeOf(data) {
     return 'Binary';
   } else if (data !== undefined && data.constructor) {
     return util.typeName(data.constructor);
+  } else if (data !== undefined && typeof data === 'object') {
+    // this object is the result of Object.create(null), hence the absence of a
+    // defined constructor
+    return 'Object';
   } else {
     return 'undefined';
   }
@@ -20,7 +24,7 @@ function isBinary(data) {
     'Float32Array', 'Float64Array'
   ];
   if (util.isNode()) {
-    var Stream = util.nodeRequire('stream').Stream;
+    var Stream = util.stream.Stream;
     if (util.Buffer.isBuffer(data) || data instanceof Stream)
       return true;
   } else {

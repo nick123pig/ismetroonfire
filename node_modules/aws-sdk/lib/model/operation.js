@@ -5,6 +5,7 @@ var property = util.property;
 var memoizedProperty = util.memoizedProperty;
 
 function Operation(name, operation, options) {
+  var self = this;
   options = options || {};
 
   property(this, 'name', operation.name || name);
@@ -13,6 +14,7 @@ function Operation(name, operation, options) {
   operation.http = operation.http || {};
   property(this, 'httpMethod', operation.http.method || 'POST');
   property(this, 'httpPath', operation.http.requestUri || '/');
+  property(this, 'authtype', operation.authtype || '');
 
   memoizedProperty(this, 'input', function() {
     if (!operation.input) {
@@ -47,6 +49,26 @@ function Operation(name, operation, options) {
     property(this, 'documentation', operation.documentation);
     property(this, 'documentationUrl', operation.documentationUrl);
   }
+
+  // idempotentMembers only tracks top-level input shapes
+  memoizedProperty(this, 'idempotentMembers', function() {
+    var idempotentMembers = [];
+    var input = self.input;
+    var members = input.members;
+    if (!input.members) {
+      return idempotentMembers;
+    }
+    for (var name in members) {
+      if (!members.hasOwnProperty(name)) {
+        continue;
+      }
+      if (members[name].isIdempotent === true) {
+        idempotentMembers.push(name);
+      }
+    }
+    return idempotentMembers;
+  });
+
 }
 
 module.exports = Operation;

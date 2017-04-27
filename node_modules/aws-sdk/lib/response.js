@@ -1,5 +1,6 @@
 var AWS = require('./core');
 var inherit = AWS.util.inherit;
+var jmespath = require('jmespath');
 
 /**
  * This class encapsulates the response information
@@ -171,7 +172,7 @@ AWS.Response = inherit({
    * @api private
    */
   cacheNextPageTokens: function cacheNextPageTokens() {
-    if (this.hasOwnProperty('nextPageTokens')) return this.nextPageTokens;
+    if (Object.prototype.hasOwnProperty.call(this, 'nextPageTokens')) return this.nextPageTokens;
     this.nextPageTokens = undefined;
 
     var config = this.request.service.paginationConfig(this.request.operation);
@@ -179,7 +180,7 @@ AWS.Response = inherit({
 
     this.nextPageTokens = null;
     if (config.moreResults) {
-      if (!AWS.util.jamespath.find(config.moreResults, this.data)) {
+      if (!jmespath.search(this.data, config.moreResults)) {
         return this.nextPageTokens;
       }
     }
@@ -187,7 +188,7 @@ AWS.Response = inherit({
     var exprs = config.outputToken;
     if (typeof exprs === 'string') exprs = [exprs];
     AWS.util.arrayEach.call(this, exprs, function (expr) {
-      var output = AWS.util.jamespath.find(expr, this.data);
+      var output = jmespath.search(this.data, expr);
       if (output) {
         this.nextPageTokens = this.nextPageTokens || [];
         this.nextPageTokens.push(output);

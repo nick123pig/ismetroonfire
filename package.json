@@ -6,10 +6,10 @@
   "author": "Nick Stocchero",
   "license": "MIT",
   "dependencies": {
-    "dotenv": "^1.2.0",
-    "lodash": "^3.10.1",
-    "twitter": "^1.2.5",
-    "aws-sdk": "^2.2.25"
+    "dotenv": "^4.0.0",
+    "lodash": "^4.17.4",
+    "twitter": "^1.7.0",
+    "aws-sdk": "^2.46.0"
   },
   "scripts": {
     "zip": "zip -r ismetroonfire.zip .env index.js node_modules/"

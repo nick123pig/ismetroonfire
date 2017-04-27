@@ -1,47 +1,132 @@
-var util = require('../core').util;
+var AWS = require('../core');
+var util = AWS.util;
 var typeOf = require('./types').typeOf;
 var DynamoDBSet = require('./set');
 
-function convertInput(data) {
-  if (typeOf(data) === 'Object') {
-    var map = {M: {}};
-    for (var key in data) {
-      map['M'][key] = convertInput(data[key]);
+/**
+ * Convert a JavaScript value to its equivalent DynamoDB AttributeValue type
+ *
+ * @param data [any] The data to convert to a DynamoDB AttributeValue
+ * @param options [map]
+ * @option options convertEmptyValues [Boolean] Whether to automatically convert
+ *                                              empty strings, blobs, and sets
+ *                                              to `null`
+ * @returns [AWS.DynamoDB.AttributeValue]
+ */
+function convertInput(data, options) {
+  options = options || {};
+  var type = typeOf(data);
+  if (type === 'Object') {
+    return formatMap(data, options);
+  } else if (type === 'Array') {
+    return formatList(data, options);
+  } else if (type === 'Set') {
+    return formatSet(data, options);
+  } else if (type === 'String') {
+    if (data.length === 0 && options.convertEmptyValues) {
+      return convertInput(null);
     }
-    return map;
-  } else if (typeOf(data) === 'Array') {
-    var list = {L: []};
-    for (var i = 0; i < data.length; i++) {
-      list['L'].push(convertInput(data[i]));
+    return { S: data };
+  } else if (type === 'Number') {
+    return { N: data.toString() };
+  } else if (type === 'Binary') {
+    if (data.length === 0 && options.convertEmptyValues) {
+      return convertInput(null);
     }
-    return list;
-  } else if (typeOf(data) === 'Set') {
-    return formatSet(data);
-  } else if (typeOf(data) === 'String') {
-    return { 'S': data };
-  } else if (typeOf(data) === 'Number') {
-    return { 'N': data.toString() };
-  } else if (typeOf(data) === 'Binary') {
-    return { 'B': data };
-  } else if (typeOf(data) === 'Boolean') {
-    return {'BOOL': data};
-  } else if (typeOf(data) === 'null') {
-    return {'NULL': true};
+    return { B: data };
+  } else if (type === 'Boolean') {
+    return { BOOL: data };
+  } else if (type === 'null') {
+    return { NULL: true };
+  } else if (type !== 'undefined' && type !== 'Function') {
+    // this value has a custom constructor
+    return formatMap(data, options);
   }
 }
 
-function formatSet(data) {
+/**
+ * @api private
+ * @param data [Array]
+ * @param options [map]
+ */
+function formatList(data, options) {
+  var list = {L: []};
+  for (var i = 0; i < data.length; i++) {
+    list['L'].push(convertInput(data[i], options));
+  }
+  return list;
+}
+
+/**
+ * @api private
+ * @param data [map]
+ * @param options [map]
+ */
+function formatMap(data, options) {
+  var map = {M: {}};
+  for (var key in data) {
+    var formatted = convertInput(data[key], options);
+    if (formatted !== void 0) {
+      map['M'][key] = formatted;
+    }
+  }
+  return map;
+}
+
+/**
+ * @api private
+ */
+function formatSet(data, options) {
+  options = options || {};
+  var values = data.values;
+  if (options.convertEmptyValues) {
+    values = filterEmptySetValues(data);
+    if (values.length === 0) {
+      return convertInput(null);
+    }
+  }
+
   var map = {};
   switch (data.type) {
-    case 'String': map['SS'] = data.values; break;
-    case 'Binary': map['BS'] = data.values; break;
-    case 'Number': map['NS'] = data.values.map(function (value) {
+    case 'String': map['SS'] = values; break;
+    case 'Binary': map['BS'] = values; break;
+    case 'Number': map['NS'] = values.map(function (value) {
       return value.toString();
     });
   }
   return map;
 }
 
+/**
+ * @api private
+ */
+function filterEmptySetValues(set) {
+    var nonEmptyValues = [];
+    var potentiallyEmptyTypes = {
+        String: true,
+        Binary: true,
+        Number: false
+    };
+    if (potentiallyEmptyTypes[set.type]) {
+        for (var i = 0; i < set.values.length; i++) {
+            if (set.values[i].length === 0) {
+                continue;
+            }
+            nonEmptyValues.push(set.values[i]);
+        }
+
+        return nonEmptyValues;
+    }
+
+    return set.values;
+}
+
+/**
+ * Convert a DynamoDB AttributeValue object to its equivalent JavaScript type.
+ *
+ * @param data [AWS.DynamoDB.AttributeValue]
+ * @returns [Object|Array|String|Number|Boolean|null]
+ */
 function convertOutput(data) {
   var list, map, i;
   for (var type in data) {
@@ -90,7 +175,9 @@ function convertOutput(data) {
   }
 }
 
-module.exports = {
+AWS.DynamoDB.Converter = {
   input: convertInput,
   output: convertOutput
 };
+
+module.exports = AWS.DynamoDB.Converter;
