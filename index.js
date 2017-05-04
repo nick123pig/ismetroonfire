@@ -83,12 +83,18 @@ var determineLine = function (text){
 
 // Send tweet!
 var sendTweet = function(text){
+  var viaTweets = ["Metro is on 🔥 (again) but @ridewithvia_dc is here to save the day 🙌 1st ride FREE with code FIRE17: http://bit.ly/2qFP10A","Skip the Metro today 🙅 Good thing we've got @ridewithvia_dc 🙌 1st ride FREE with code FIRE17: http://bit.ly/2pFIByZ"];
   client.post('statuses/update', {status: text},  function(error, tweet, response){
     if(error) throw error;
     console.log(response);
+    client.post('statuses/update', {status: _.sample(viaTweets)},  function(viaError, viaTweet, viaResponse){
+      if(viaError) throw viaError;
+      console.log(viaResponse);
+    });
   });
   return true;
 };
+
 
 // Update the S3 API
 var updateS3 = function(result_json,context){
