@@ -12,7 +12,8 @@ const humanLines = require('./dict/humanLines.js')
 const parseMetroHeroResp = (metroHeroRes) => {
   console.log(JSON.stringify(metroHeroRes));
   const stationsWithFireReports = Object.keys(metroHeroRes).reduce((acc,stationCode) => {
-    if (metroHeroRes[stationCode]["numTagsByType"]["SMOKE_OR_FIRE"]) {
+    // If there's more than one SMOKE_OR_FIRE report, we say it's on fire
+    if (metroHeroRes[stationCode]["numTagsByType"]["SMOKE_OR_FIRE"] > 1) {
       acc.push(stationCode);
     }
     return acc;

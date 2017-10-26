@@ -20,6 +20,7 @@ package:
   include:
     - node_modules
     - dict
+    - serverless.env.yml
 
 functions:
   scrape:
