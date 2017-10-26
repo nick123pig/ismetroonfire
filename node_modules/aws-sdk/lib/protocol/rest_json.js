@@ -16,11 +16,19 @@ function populateBody(req) {
 
     if (payloadShape.type === 'structure') {
       req.httpRequest.body = builder.build(params, payloadShape);
+      applyContentTypeHeader(req);
     } else { // non-JSON payload
       req.httpRequest.body = params;
     }
   } else {
     req.httpRequest.body = builder.build(req.params, input);
+    applyContentTypeHeader(req);
+  }
+}
+
+function applyContentTypeHeader(req) {
+  if (!req.httpRequest.headers['Content-Type']) {
+    req.httpRequest.headers['Content-Type'] = 'application/json';
   }
 }
 
@@ -45,13 +53,13 @@ function extractData(resp) {
   if (rules.payload) {
     var payloadMember = rules.members[rules.payload];
     var body = resp.httpResponse.body;
-    if (payloadMember.isStreaming) {
-      resp.data[rules.payload] = body;
-    } else if (payloadMember.type === 'structure' || payloadMember.type === 'list') {
+    if (payloadMember.type === 'structure' || payloadMember.type === 'list') {
       var parser = new JsonParser();
       resp.data[rules.payload] = parser.parse(body, payloadMember);
+    } else if (payloadMember.type === 'binary' || payloadMember.isStreaming) {
+      resp.data[rules.payload] = body;
     } else {
-      resp.data[rules.payload] = body.toString();
+      resp.data[rules.payload] = payloadMember.toType(body);
     }
   } else {
     var data = resp.data;

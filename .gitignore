@@ -1,2 +1,4 @@
 .env
-ismetroonfire.zip
+serverless.env.yml
+node_modules
+.DS_Store

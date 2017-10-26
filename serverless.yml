@@ -1,0 +1,45 @@
+service: ismetroonfire-api
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  environment:
+    DYNAMODB_TABLE_NAME: ismetroonfire-${opt:stage, self:provider.stage}
+    TWITTER_CONSUMER_KEY: ${file(./serverless.env.yml):TWITTER_CONSUMER_KEY}
+    TWITTER_CONSUMER_SECRET: ${file(./serverless.env.yml):TWITTER_CONSUMER_SECRET}
+    TWITTER_ACCESS_TOKEN_KEY: ${file(./serverless.env.yml):TWITTER_ACCESS_TOKEN_KEY}
+    TWITTER_ACCESS_TOKEN_SECRET: ${file(./serverless.env.yml):TWITTER_ACCESS_TOKEN_SECRET}
+    METRO_HERO_API_KEY: ${file(./serverless.env.yml):METRO_HERO_API_KEY}
+
+package:
+  include:
+    - node_modules
+
+functions:
+  scrape:
+    handler: handler.scrape
+    events:
+      - schedule:
+          rate: rate(5 minutes)
+          enabled: true
+  api:
+    handler: handler.api
+
+resources:
+  Resources:
+    CryptckUserMetadataDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: timestamp
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: timestamp
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_TABLE_NAME}

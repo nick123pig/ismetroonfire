@@ -1,5 +1,5 @@
 var util = require('./util');
-var regionConfig = require('./region_config.json');
+var regionConfig = require('./region_config_data.json');
 
 function generateRegionPrefix(region) {
   if (!region) return null;
@@ -41,10 +41,16 @@ function configureEndpoint(service) {
     var key = keys[i];
     if (!key) continue;
 
-    if (regionConfig.rules.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(regionConfig.rules, key)) {
       var config = regionConfig.rules[key];
       if (typeof config === 'string') {
         config = regionConfig.patterns[config];
+      }
+
+      // set dualstack endpoint
+      if (service.config.useDualstack && util.isDualstackAvailable(service)) {
+        config = util.copy(config);
+        config.endpoint = '{service}.dualstack.{region}.amazonaws.com';
       }
 
       // set global endpoint
