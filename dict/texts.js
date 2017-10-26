@@ -30,5 +30,9 @@ module.exports = {
     "No", 
     "Nah", 
     "Negative"
+  ],
+  advertisements: [
+    "Metro is on 🔥 (again) but @ridewithvia_dc is here to save the day 🙌 1st ride FREE with code FIRE17: http://bit.ly/2qFP10A",
+    "Skip the Metro today 🙅 Good thing we've got @ridewithvia_dc 🙌 1st ride FREE with code FIRE17: http://bit.ly/2pFIByZ"
   ]
 };

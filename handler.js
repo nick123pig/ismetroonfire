@@ -29,13 +29,22 @@ const sendTweet = (lines,cb) => {
     access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
     access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
   });
+
+  // Build main tweet text
   const opening = _.sample(texts.openings);
   const linesString = (String(lines).split(",").join(", ")).trim() + " line" +(lines.length > 1 ? "s" : "")
-  const status = opening + " Twitter is reporting fire/smoke on the " + linesString + ". http://www.IsMetroOnFire.com");
+  const status = opening + " Twitter is reporting fire/smoke on the " + linesString + ". http://www.IsMetroOnFire.com";
+  
+  // Build advertising tweet text
+  const viaTweet = _.sample(text.advertisements);
 
-  client.post('statuses/update', {status}, (error, tweet, response) => {
-    cb(error,response);
-  });
+  // Send two tweets
+  client.post('statuses/update', { status }).then(fireResp => {
+    client.post('statuses/update', { viaTweet }).then(viaResp => {
+      cb(null, {fireResp, viaResp })
+    })
+  }).catch(error => cb(err));
+
 }
 
 const updateS3 = (lines, cb) => {
