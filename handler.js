@@ -19,7 +19,7 @@ const parseMetroHeroResp = (metroHeroRes) => {
     const lineCode = stationLines[code];
     return humanLines[lineCode]
   });
-  return = _.uniq(_.flatten(uniqStationsWithFireReports));
+  return _.uniq(_.flatten(uniqStationsWithFireReports));
 }
 
 const sendTweet = (lines,cb) => {
