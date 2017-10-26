@@ -21,7 +21,7 @@ functions:
     handler: handler.scrape
     events:
       - schedule:
-          rate: rate(5 minutes)
+          rate: rate(15 minutes)
           enabled: true
   api:
     handler: handler.api
